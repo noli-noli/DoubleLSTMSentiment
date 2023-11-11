@@ -1,0 +1,49 @@
+version: "3"
+services:
+  gp20a051:
+    #コンテナの名前を指定
+    container_name: seq2seq
+
+    #ビルド
+    build:
+      context: .
+      #ビルドする際に使用するdockerfileを指定
+      dockerfile: dockerfile
+
+      #dockerfileで使用する変数を渡す。
+      args:
+        - http_tmp=$http_proxy
+        - https_tmp=$https_proxy
+
+    #ワーキングディレクトリを/workspaceに設定
+    volumes:
+      - ./workspace:/workspace
+
+    #ワーキングディレクトリを/workspaceに設定
+    working_dir: /workspace
+
+    #コンテナ起動時に実行するプログラムを記述
+    command: /bin/bash
+
+    #学内用proxyを使用するための環境変数が書かれたファイルを指定
+    env_file:
+      - proxy.env
+
+    #ttyを有効化
+    tty: true
+
+    #キーボード割込みによるコンテナの停止時、コンテナ内のプロセスに正常終了を通知する。
+    stop_signal: SIGINT
+
+    #GPUを使用するための設定
+    deploy:
+      resources:
+        #コンテナが使用するRAMの上限を設定する際は以下2行をコメントアウト
+        #limits:
+        #  memory: 24G
+        reservations:
+          devices:
+            - capabilities: [gpu]
+
+    #core dumpを防ぐ為の設定
+    shm_size: 12GB
